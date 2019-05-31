@@ -6,20 +6,22 @@ services:
     build: .
 #    command: python manage.py runserver 0.0.0.0:8000
     expose:
-      - "8081"
-    command: gunicorn --chdir onionsv --bind :8081 onionsv.wsgi:application
+      - "8000"
+    command: gunicorn --chdir onionsv --bind :8000 onionsv.wsgi:application
     volumes:
-      - .:/home/ubuntu/server
-      - static_volume:/home/ubuntu/server/static
+      - .:/home/ubuntu/webserver
+      - static_volume:/home/ubuntu/webserver/static
     environment:
 #      - DEBUG=1
 #      - SECRET_KEY=foo
-      - PUBLIC_IP=52.77.249.165
+
+      - PUBLIC_IP=52.77.212.204 # <-- your server public ip. Used in setting.py
+
       - SQL_ENGINE=django.db.backends.postgresql_psycopg2
       - SQL_DATABASE=cura8
       - SQL_USER=mpire
       - SQL_PASSWORD=123456
-      - SQL_HOST=database1
+      - SQL_HOST=database1 # <-- must be the same name with your database service
       - SQL_PORT=5432
       #- DATABASE=postgres
     depends_on:
@@ -33,7 +35,7 @@ services:
       - "80:80"
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - static_volume:/home/ubuntu/server/static
+      - static_volume:/home/ubuntu/webserver/static
     depends_on:
       - onionsv
     networks:
