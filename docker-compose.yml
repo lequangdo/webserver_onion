@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+
+  onionsv:
+    build: .
+#    command: python manage.py runserver 0.0.0.0:8000
+    expose:
+      - "8081"
+    command: gunicorn --chdir onionsv --bind :8081 onionsv.wsgi:application
+    volumes:
+      - .:/home/ubuntu/server
+      - static_volume:/home/ubuntu/server/static
+    environment:
+#      - DEBUG=1
+#      - SECRET_KEY=foo
+      - PUBLIC_IP=52.77.249.165
+      - SQL_ENGINE=django.db.backends.postgresql_psycopg2
+      - SQL_DATABASE=cura8
+      - SQL_USER=mpire
+      - SQL_PASSWORD=123456
+      - SQL_HOST=database1
+      - SQL_PORT=5432
+      #- DATABASE=postgres
+    depends_on:
+      - database1
+    networks:
+      - nginx_network
+      - database1_network
+  nginx:
+    image: nginx:1.14
+    ports:
+      - "80:80"
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/home/ubuntu/server/static
+    depends_on:
+      - onionsv
+    networks:
+      - nginx_network
+
+  database1:
+    image: postgres:11
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=mpire
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=cura8
+    networks:
+      - database1_network
+    volumes:
+      - database1_volume:/var/lib/postgresql/data
+
+networks:  # <-- and here
+  nginx_network:
+    driver: bridge
+  database1_network:
+    driver: bridge
+
+volumes:
+  database1_volume:
+  static_volume:
+  #media_volume:
+
